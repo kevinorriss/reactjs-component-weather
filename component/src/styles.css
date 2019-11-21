@@ -1,0 +1,50 @@
+.weather__container {
+    font-family: 'Segoe UI', 'Helvetica Neue', monospace;
+}
+
+.weather__location {
+    font-size: x-large;
+    font-weight: bolder;
+}
+
+.weather__location span {
+    margin-left: 0.5rem;
+}
+
+.weather__current-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.weather__daylight-time {
+    display: inline;
+    margin: 0 0.5rem;
+    font-size: 0.8rem;
+}
+
+.weather__daylight-time--sunrise {
+    font-weight: 900;
+}
+
+.weather__daylight-time span {
+    margin-left: 0.2rem;
+}
+
+.weather__next-24-hours {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+    margin: 1rem 0;
+}
+
+.weather__hour {
+    display: flex;
+    flex-direction: column;
+}
+
+.weather__day {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
