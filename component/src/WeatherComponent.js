@@ -1,4 +1,8 @@
 import React from 'react'
+import Moment from 'react-moment'
+import 'moment-timezone'
+import PropTypes from 'prop-types'
+import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLocationArrow, faCloud, faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
 import './styles.css'
@@ -9,60 +13,145 @@ class WeatherComponent extends React.Component {
 
         // set the state
         this.state = {
+            locationURL: props.locationURL,
+            forecastURL: props.forecastURL,
             loading: true,
+            browserSupport: null,
             location: null,
             forecast: null
         }
+
+        this.handlePositionReceived = this.handlePositionReceived.bind(this)
+        this.getForecast = this.getForecast.bind(this)
+        this.getErrorMessage = this.getErrorMessage.bind(this)
+        this.getLocationText = this.getLocationText.bind(this)
     }
 
     componentDidMount() {
+        // check the browser supports geolocation
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(this.handlePositionReceived, this.handlePositionError)
+            // set the support in the state
+            this.setState((prevState) => ({
+                ...prevState,
+                browserSupport: true
+            // once state has been set, request the location, handling success and error callbacks
+            }), () => {
+                navigator.geolocation.getCurrentPosition(this.handlePositionReceived, () => {
+                    this.setState((prevState) => ({
+                        ...prevState,
+                        loading: false
+                    }))
+                })
+            })
+
+        // browser does not support geolocation
         } else {
-            this.handlePositionError()
+            this.setState((prevState) => ({
+                ...prevState,
+                loading: false,
+                browserSupport: false
+            }))
         }
     }
 
-    handlePositionReceived(position) {
-        console.log(`you are at (lat:${position.coords.latitude}, long:${position.coords.longitude})`)
-        // this.setState((prevState) => ({
-        //     ...prevState,
-        //     location: {
-        //         latitude: position.coords.latitude,
-        //         longitude: position.coords.longitude,
-        //         name: ''
-        //     }
-        // }))
+    async handlePositionReceived(position) {
+        try {
+            const url = `${this.state.locationURL}?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}`
+            const response = await axios.get(url)
+
+            this.setState((prevState) => ({
+                ...prevState,
+                location: {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    name: response.data
+                }
+            }), this.getForecast)
+        } catch (error) {
+            this.setState((prevState) => ({
+                ...prevState,
+                loading: false
+            }))
+        }
     }
 
-    handlePositionError() {
+    async getForecast() {
+        const url = `${this.state.forecastURL}?latitude=${this.state.location.latitude}&longitude=${this.state.location.longitude}`
+        const response = await axios.get(url)
+
         this.setState((prevState) => ({
             ...prevState,
-            loading: false,
-            location: null,
-            forecast: null
+            forecast: {
+                timezone: response.data.timezone,
+                current: {
+                    summary: response.data.currently.summary,
+                    sunriseTime: response.data.daily.data[0].sunriseTime,
+                    sunsetTime: response.data.daily.data[0].sunsetTime
+                }
+            }
         }))
+        console.log(response.data)
+    }
+
+    getLocationText() {
+        return this.state.location ? this.state.location.name : 'Loading...'
+    }
+
+    getErrorMessage() {
+        if (this.state.loading) {
+            return
+        }
+
+        if (!this.state.location) {
+            if (!this.state.browserSupport) {
+                return 'Your browser does not support geolocation'
+            } else {
+                return 'Unable to get your location'
+            }
+        }
+        else if (!this.state.forecast) {
+            return 'Unable to get forecast'
+        }
     }
 
     render() {
         return (
             <div className="weather__container">
-                {!this.state.loading && !this.state.location && <div className="weather__error"><p>Failed to get your location</p></div>}
-                {!this.state.loading && this.state.location && !this.state.forecast && <div className="weather__error"><p>Failed to get forecast</p></div>}
+                {!this.state.loading && (!this.state.location || !this.state.forecast) && <div className="weather__error"><p>{this.getErrorMessage()}</p></div>}
                 <div className="weather__location">
                     <FontAwesomeIcon icon={faLocationArrow} />
-                    <span>{this.state.location ? this.state.location.name : 'Loading...'}</span>
+                    <span title={this.getLocationText()}>{this.getLocationText()}</span>
                 </div>
                 <div className="weather__current-row">
                     <div>Next Hour</div>
                     <div>
                         <div className="weather__daylight-time weather__daylight-time--sunrise">
                             <FontAwesomeIcon icon={faSun} color="yellow" />
-                            <span>07:15</span>
+                            <span>
+                                {this.state.forecast ? (
+                                    <Moment 
+                                        unix 
+                                        format="HH:mm" 
+                                        tz={this.state.forecast.timezone}
+                                    >
+                                        {this.state.forecast.current.sunriseTime}
+                                    </Moment>
+                                ) : '--:--'}
+                            </span>
                         </div>
                         <div className="weather__daylight-time">
                             <FontAwesomeIcon icon={faMoon} color="grey" />
-                            <span>16:15</span>
+                            <span>
+                                {this.state.forecast ? (
+                                    <Moment
+                                        unix
+                                        format="HH:mm"
+                                        tz={this.state.forecast.timezone}
+                                    >
+                                        {this.state.forecast.current.sunsetTime}
+                                    </Moment>
+                                ) : '--:--'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -78,6 +167,11 @@ class WeatherComponent extends React.Component {
             </div>
         )
     }
+}
+
+WeatherComponent.propTypes = {
+    locationURL: PropTypes.string.isRequired,
+    forecastURL: PropTypes.string.isRequired
 }
 
 export default WeatherComponent

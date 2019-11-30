@@ -11,7 +11,9 @@ class WeatherData {
     }
 
     /**
-     * Gets the name of the location specified by the lat/long coordinates in the request query
+     * Gets the name of the location specified by the lat/long coordinates in the request query.
+     * 
+     * Returns an empty string if the mapbox api doesn't return anything from the coordinates.
      * 
      * @param {Request} req 
      * @param {Response} res 
@@ -32,9 +34,22 @@ class WeatherData {
             let types = []
             response.data.features.forEach(f => {types[f.place_type[0]] = f.text})
 
-            if (types)
-    
-            res.send(`${types['locality']}, ${types['place']}`)
+            // append locality if exists
+            let location = ''
+            if ('locality' in types) {
+                location += types['locality']
+            }
+
+            // append place if exists, adding a comma providing locality exists too
+            if ('place' in types) {
+                if (location.length > 0) {
+                    location += ', '
+                }
+                location += types['place']
+            }
+
+            // send back the location or an empty string if no location found
+            res.send(location)
         // throw a 500 status on error
         } catch (error) {
             res.status(500).send({msg: 'Server Error'})
