@@ -64,11 +64,39 @@ class WeatherData {
             const token = encodeURIComponent(this.darkskyToken)
             const units = encodeURIComponent(this.units)
             
-            // create the request URL
-            const url = `https://api.darksky.net/forecast/${token}/${lat},${long}?units=${units}&exclude=minutely,hourly,alerts,flags`
+            // create the request URL and get the forecast
+            const url = `https://api.darksky.net/forecast/${token}/${lat},${long}?units=${units}&exclude=minutely,alerts,flags`
+            const response = (await axios.get(url))
 
-            const response = await axios.get(url)
-            res.json(response.data)
+            // return only the data needed
+            res.json({
+                timezone: response.data.timezone,
+                currently: {
+                    summary: response.data.currently.summary,
+                    icon: response.data.currently.icon,
+                    temperature: response.data.currently.temperature,
+                    sunriseTime: response.data.daily.data[0].sunriseTime,
+                    sunsetTime: response.data.daily.data[0].sunsetTime
+                },
+                hourly: response.data.hourly.data.map((h) => ({
+                    time: h.time,
+                    summary: h.summary,
+                    icon: h.icon,
+                    temperature: h.temperature,
+                    precipProbability: h.precipProbability,
+                    humidity: h.humidity,
+                    windSpeed: h.windSpeed
+                })),
+                daily: response.data.daily.data.map((d) => ({
+                    time: d.time,
+                    summary: d.summary,
+                    icon: d.icon,
+                    sunriseTime: d.sunriseTime,
+                    sunsetTime: d.sunsetTime,
+                    temperatureMin: d.temperatureMin,
+                    temperatureMax: d.temperatureMax
+                }))
+            })
         // throw a 500 status on error
         } catch (error) {
             res.status(500).send({msg: 'Server Error'})
