@@ -1,247 +1,182 @@
 import React from 'react'
-import Moment from 'react-moment'
-import moment from 'moment-timezone'
-import Slider from 'rc-slider'
 import PropTypes from 'prop-types'
-import axios from 'axios'
+import Moment from 'react-moment'
+import Location from './components/Location'
+import HourSlider from './components/HourSlider'
+import Icon from './components/Icon'
 import './styles.css'
-import 'rc-slider/assets/index.css'
 
 class WeatherComponent extends React.Component {
-    // set the components default property values
-    static defaultProps = {
-        sliderMarks: 11,
-        sliderMarkStep: 2,
-        sliderStep: 1
-    }
-
     constructor(props) {
         super(props)
-
-        // set the default state
-        this.state = {
-            loading: true,
-            browserSupport: null,
-            location: null,
-            forecast: null,
-            selectedHour: null
-        }
-
-        // bind this to the functions
-        this.handlePositionReceived = this.handlePositionReceived.bind(this)
-        this.getForecast = this.getForecast.bind(this)
-        this.getErrorMessage = this.getErrorMessage.bind(this)
-        this.getLocationText = this.getLocationText.bind(this)
-        this.getSliderMarks = this.getSliderMarks.bind(this)
+        this.onLocationReceived = this.onLocationReceived.bind(this)
+        this.onLocationError = this.onLocationError.bind(this)
+        this.onForecastReceived = this.onForecastReceived.bind(this)
+        this.onForecastError = this.onForecastError.bind(this)
         this.onSliderChange = this.onSliderChange.bind(this)
-    }
 
-    componentDidMount() {
-        // check the browser supports geolocation
-        /*if ("geolocation" in navigator) {
-            // set the support in the state
-            this.setState((prevState) => ({
-                ...prevState,
-                browserSupport: true
-            // once state has been set, request the location, handling success and error callbacks
-            }), () => {
-                navigator.geolocation.getCurrentPosition(this.handlePositionReceived, () => {
-                    this.setState((prevState) => ({
-                        ...prevState,
-                        loading: false
-                    }))
-                })
-            })
-        // browser does not support geolocation
-        } else {
-            this.setState((prevState) => ({
-                ...prevState,
-                loading: false,
-                browserSupport: false
-            }))
-        }*/
-
-        this.setState((prevState) => ({
-            ...prevState,
-            loading: false,
-            browserSupport: true,
-            location: {
-                latitude: '51.435040',
-                longitude: '-0.181660',
-                name: 'Earlsfield, London, UK'
+        this.state = {
+            position: {
+                latitude: null,
+                longitude: null
             },
-            forecast: {
-                timezone: "Europe/London",
-                currently: {
-                    summary: "Clear",
-                    icon: "clear-night",
-                    temperature: 4.5,
-                    sunriseTime: 1577866020,
-                    sunsetTime: 1577894580
-                },
-                hourly: [
-                    {
-                        time: 1577908800,
-                        summary: "Clear",
-                        icon: "clear-night",
-                        temperature: 4.52,
-                        precipProbability: 0.01,
-                        humidity: 0.97,
-                        windSpeed: 3.34
-                    },
-                    {
-                        time: 1577912400,
-                        summary: "Clear",
-                        icon: "clear-night",
-                        temperature: 4.48,
-                        precipProbability: 0,
-                        humidity: 0.98,
-                        windSpeed: 3.38
-                    },
-                    {
-                        time: 1577916000,
-                        summary: "Clear",
-                        icon: "clear-night",
-                        temperature: 4.5,
-                        precipProbability: 0.01,
-                        humidity: 1,
-                        windSpeed: 3.53
-                    }
-                ],
-                daily: [
-                    {
-                        time: 1577836800,
-                        summary: "Clear throughout the day.",
-                        icon: "clear-day",
-                        sunriseTime: 1577866020,
-                        sunsetTime: 1577894580,
-                        temperatureMin: 0.5,
-                        temperatureMax: 7.11
-                    },
-                    {
-                        time: 1577923200,
-                        summary: "Possible drizzle overnight.",
-                        icon: "rain",
-                        sunriseTime: 1577952420,
-                        sunsetTime: 1577981040,
-                        temperatureMin: 4.51,
-                        temperatureMax: 11.39
-                    },
-                    {
-                        time: 1578009600,
-                        summary: "Overcast throughout the day.",
-                        icon: "rain",
-                        sunriseTime: 1578038820,
-                        sunsetTime: 1578067500,
-                        temperatureMin: 4.21,
-                        temperatureMax: 10.98
-                    }
-                ]
+            timezone: null,
+            daily: null,
+            hourly: null,
+            currentHour: null,
+            error: null
+        }
+    }
+
+    onLocationReceived(latitude, longitude) {
+        // set the position in the state
+        this.setState((prevState) => ({
+            ...prevState,
+            position: {
+                latitude,
+                longitude
             }
         }))
     }
 
-    async handlePositionReceived(position) {
-        try {
-            const url = `${this.state.locationURL}?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}`
-            const response = await axios.get(url)
+    onLocationError(code) {
 
-            this.setState((prevState) => ({
-                ...prevState,
-                location: {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    name: response.data
-                }
-            }), this.getForecast)
-        } catch (error) {
-            this.setState((prevState) => ({
-                ...prevState,
-                loading: false
-            }))
+        // pick the error message depending on code passed
+        let errorMessage
+        switch (code) {
+            case Location.PERMISSION_DENIED:
+                errorMessage = 'Permission to read your location was denied'
+                break
+            case Location.POSITION_UNAVAILABLE:
+                errorMessage = 'Your position is unavailable'
+                break
+            case Location.TIMEOUT:
+                errorMessage = 'Getting your position timed out'
+                break
+            case Location.UNSUPPORTED_BROWSER:
+                errorMessage = 'Your browser does not support geolocation'
+                break
+            case Location.RESPONSE_ERROR:
+                errorMessage = 'An error occurred in the response to getting your location information'
+                break
+            default:
+                errorMessage = 'An unknown error occured'
+                break
         }
-    }
 
-    async getForecast() {
-        const url = `${this.state.forecastURL}?latitude=${this.state.location.latitude}&longitude=${this.state.location.longitude}`
-        const response = await axios.get(url)
-
+        // set the error in the state
         this.setState((prevState) => ({
             ...prevState,
-            forecast: response.data
+            error: errorMessage
         }))
     }
 
-    getLocationText() {
-        return this.state.location ? this.state.location.name : 'Loading...'
-    }
-
-    getErrorMessage() {
-        if (this.state.loading) {
-            return
-        }
-
-        if (!this.state.location) {
-            if (!this.state.browserSupport) {
-                return 'Your browser does not support geolocation'
-            } else {
-                return 'Unable to get your location'
-            }
-        }
-        else if (!this.state.forecast) {
-            return 'Unable to get forecast'
-        }
-    }
-
-    getSliderMarks() {
-        let marks = {}
-        for (var i=0; i<this.props.sliderMarks; i++) { marks[i] = '' }
-
-        if (this.state.loading || !this.state.forecast) {
-            return marks
-        }
-
-        this.state.forecast.hourly.forEach((hour, i) => {
-            if (i % this.props.sliderMarkStep) {
-                marks[i] = moment.unix(hour.time).tz(this.state.forecast.timezone).format('HH:mm')
-            }
-        })
-
-        return marks
-    }
-
-    onSliderChange (i) {
+    onForecastReceived(forecast) {
         this.setState((prevState) => ({
             ...prevState,
-            selectedHour: this.state.forecast.hourly[i]
+            timezone: forecast.timezone,
+            daily: forecast.daily,
+            hourly: forecast.hourly,
+            currentHour: forecast.hourly[0]
+        }))
+    }
+
+    onForecastError() {
+        console.log('forecast error')
+    }
+
+    onSliderChange(index) {
+        this.setState((prevState) => ({
+            ...prevState,
+            currentHour: prevState.hourly[index]
         }))
     }
 
     render() {
-
-        let currentHourSummary
-        if (this.state.selectedHour) {
-            currentHourSummary = 
-                <span>
-                    <Moment unix format="ddd HH:mm" tz={this.state.forecast.timezone}>{this.state.selectedHour.time}</Moment>
-                    , {this.state.selectedHour.summary}
-                </span>
-        } else {
-            currentHourSummary = <span>&nbsp;</span>
-        }
-
         return (
             <div className="weather__container">
-                {!this.state.loading && (!this.state.location || !this.state.forecast) && <div className="weather__error"><p>{this.getErrorMessage()}</p></div>}
-                <p className="weather__location" title={this.getLocationText()}>{this.getLocationText()}</p>
-                <p className="weather__current-hour">{currentHourSummary}</p>
-                <Slider
-                    marks={this.getSliderMarks()}
-                    step={this.props.sliderStep}
-                    max={this.props.sliderMarks}
-                    included={false}
-                    onChange={this.onSliderChange}
-                />
+                {this.state.error && (
+                    <div className="weather__error">
+                        <p>{this.state.error}</p>
+                    </div>
+                )}
+                <Location
+                    onLocationReceived={this.onLocationReceived}
+                    onLocationError={this.onLocationError}
+                    locationURL={this.props.locationURL}/>
+                <div>
+                    <p className="weather__current-summary" 
+                        title={this.state.currentHour && this.state.currentHour.summary}>
+                        {this.state.currentHour ? (
+                            <React.Fragment>
+                                <Moment unix
+                                    format="ddd HH:mm"
+                                    tz={this.state.timezone}>
+                                    {this.state.currentHour.time}
+                                </Moment>, {this.state.currentHour.summary}
+                            </React.Fragment>
+                        ) : (
+                            <span>Loading weather data...</span>
+                        )
+                    }</p>
+                    <div className="weather__current-forecast">
+                        {this.state.currentHour ? (
+                            <React.Fragment>
+                                <Icon name={this.state.currentHour.icon}/>
+                                <div className="weather__current-temp">
+                                    {Math.floor(this.state.currentHour.temperature)}&deg;C
+                                </div>
+                                <div className="weather__current-perc">
+                                    <p>Precip: {Math.floor(this.state.currentHour.precipProbability*100)}%</p>
+                                    <p>Humidity: {Math.floor(this.state.currentHour.humidity*100)}%</p>
+                                    <p>Wind: {Math.floor(this.state.currentHour.windSpeed)} mph</p>
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            <React.Fragment>
+                                <Icon name="default" />
+                                <div className="weather__current-temp">--</div>
+                                <div className="weather__current-perc">
+                                    <p>Precip: --</p>
+                                    <p>Humidity: --</p>
+                                    <p>Wind: --</p>
+                                </div>
+                            </React.Fragment>
+                        )}
+                    </div>
+                </div>
+                <div className="weather__slider">
+                <HourSlider
+                    latitude={this.state.position.latitude}
+                    longitude={this.state.position.longitude}
+                    onForecastReceived={this.onForecastReceived}
+                    onForecastError={this.onForecastError}
+                    forecastURL={this.props.forecastURL}
+                    onSliderChange={this.onSliderChange}/>
+                </div>
+                <div class="weather__daily">
+                {this.state.daily ? (
+                    this.state.daily.map((day, index) => (
+                        <div className="weather__day" title={day.summary} key={index}>
+                            <Moment unix format="ddd" tz={this.state.timezone}>{day.time}</Moment>
+                            <Icon name={day.icon} />
+                            <p className="weather__temp">{Math.floor(day.temperatureMax)}&deg;C</p>
+                            <p className="weather__temp weather__temp--low">{Math.floor(day.temperatureMin)}&deg;C</p>
+                        </div>
+                    ))
+                ) : (
+                    <div className="weather__day">
+                        <Moment unix format="[--]">{0}</Moment>
+                        <Icon name="default" />
+                        <p className="weather__temp">--</p>
+                        <p className="weather__temp weather__temp--low">--</p>
+                    </div>
+                )}
+                </div>
+                <p className="weather__icon-link">
+                    <a href="https://www.freepik.com/free-vector/weather-icons-set_709126.htm" 
+                        target="_blank">Icons created by freepik - www.freepik.com</a>
+                </p>
             </div>
         )
     }
@@ -253,4 +188,9 @@ WeatherComponent.propTypes = {
     sliderMarks: PropTypes.number,
 }
 
-export default WeatherComponent
+export {
+    WeatherComponent as default,
+    Location, 
+    HourSlider,
+    Icon
+}

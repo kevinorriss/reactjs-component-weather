@@ -1,31 +1,17 @@
 import babel from 'rollup-plugin-babel'
-import { uglify } from 'rollup-plugin-uglify'
 import postcss from 'rollup-plugin-postcss'
+import image from '@rollup/plugin-image'
+import { terser } from "rollup-plugin-terser"
 
-const config = [{
-    input: 'src/WeatherComponent.js',
-    plugins: [
-        postcss({extensions: ['.css']}),
-        babel({
-            exclude: "node_modules/**",
-            presets: ["@babel/env", "@babel/react"],
-            plugins: [
-                "@babel/plugin-proposal-class-properties",
-                "@babel/plugin-proposal-object-rest-spread"
-            ]
-        }),
-        uglify()
-    ],
-    output: {
-        file: 'build/WeatherComponent.js',
-        format: 'cjs'
-    }
-    }, {
-        input: 'src/WeatherData.js',
+const config =
+[
+    {
+        input: 'src/main.js',
         plugins: [
+            postcss({extensions: ['.css']}),
             babel({
                 exclude: "node_modules/**",
-                presets: ["@babel/env"],
+                presets: ["@babel/env", "@babel/react"],
                 runtimeHelpers: true,
                 plugins: [
                     ["@babel/plugin-transform-runtime",
@@ -37,11 +23,13 @@ const config = [{
                     "@babel/plugin-proposal-object-rest-spread"
                 ]
             }),
-            uglify()
+            image(),
+            terser()
         ],
         output: {
-            file: 'build/WeatherData.js',
+            file: 'build/Weather.js',
             format: 'cjs'
         }
-    }]
+    }
+]
 export default config
