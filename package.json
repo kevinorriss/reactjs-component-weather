@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "server": "env-cmd -f ./config/dev.env nodemon server",
+    "server": "yarn --cwd server start",
     "component": "yarn --cwd component run dev",
     "client": "yarn --cwd client start",
     "dev": "concurrently \"yarn run server\" \"yarn run component\" \"yarn run client\""
@@ -11,11 +11,6 @@
   "author": "Kevin Orriss <kevinorriss@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^5.0.0",
-    "env-cmd": "^10.0.1",
-    "nodemon": "^2.0.1"
-  },
-  "dependencies": {
-    "express": "^4.17.1"
+    "concurrently": "^5.0.0"
   }
 }

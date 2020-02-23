@@ -1,3 +1,4 @@
+/*
 import React from 'react'
 import { mount } from 'enzyme'
 import renderer from 'react-test-renderer'
@@ -60,7 +61,7 @@ it('should render default Icon correctly', () => {
     expect(component).toMatchSnapshot()
 })
 
-/*
+
 clear-day
 clear-night
 rain
