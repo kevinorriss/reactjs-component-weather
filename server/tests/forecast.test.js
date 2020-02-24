@@ -130,7 +130,7 @@ test('should handle internal server error', async (done) => {
 })
 
 test('should handle no daily data response', async (done) => {
-    forecastResponse.data.daily = []
+    forecastResponse.data.daily.data = []
 
     axios.get = jest.fn()
     axios.get.mockImplementationOnce(() => Promise.resolve(forecastResponse))
@@ -152,8 +152,31 @@ test('should handle no daily data response', async (done) => {
     done()
 })
 
+test('should handle partial daily data response', async (done) => {
+    forecastResponse.data.daily.data = [{time: 1582477200, summary: 'Overcast', icon: 'cloudy'}]
+
+    axios.get = jest.fn()
+    axios.get.mockImplementationOnce(() => Promise.resolve(forecastResponse))
+
+    const response = await request(app)
+        .get(`/weather/forecast?latitude=${positionOne.latitude}&longitude=${positionOne.longitude}`)
+        .send()
+        .expect(200)
+
+        expect(response.body).toMatchObject({
+            timezone: 'Europe/London',
+            hourly: [
+                {time: 1582477200, summary: 'Overcast', icon: 'cloudy', precipProbability: 0.05, temperature: 8.57, humidity: 0.71, windSpeed: 10.71},
+                {time: 1582577200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31}
+            ],
+            daily: [{time: 1582477200, summary: 'Overcast', icon: 'cloudy'}]
+        })
+        
+    done()
+})
+
 test('should handle no hourly data response', async (done) => {
-    forecastResponse.data.hourly = []
+    forecastResponse.data.hourly.data = []
 
     axios.get = jest.fn()
     axios.get.mockImplementationOnce(() => Promise.resolve(forecastResponse))
@@ -166,6 +189,29 @@ test('should handle no hourly data response', async (done) => {
         expect(response.body).toMatchObject({
             timezone: 'Europe/London',
             hourly: [],
+            daily: [
+                {time: 1582416000, summary: 'Light rain', icon: 'rain', temperatureMin: 6.37, temperatureMax: 13.47},
+                {time: 1582516000, summary: 'Overcast', icon: 'cloudy', temperatureMin: 4.23, temperatureMax: 12.42}
+            ]
+        })
+        
+    done()
+})
+
+test('should handle partial hourly data response', async (done) => {
+    forecastResponse.data.hourly.data = [{time: 1582416000, summary: 'Light rain', icon: 'rain'}]
+
+    axios.get = jest.fn()
+    axios.get.mockImplementationOnce(() => Promise.resolve(forecastResponse))
+
+    const response = await request(app)
+        .get(`/weather/forecast?latitude=${positionOne.latitude}&longitude=${positionOne.longitude}`)
+        .send()
+        .expect(200)
+
+        expect(response.body).toMatchObject({
+            timezone: 'Europe/London',
+            hourly: [{time: 1582416000, summary: 'Light rain', icon: 'rain'}],
             daily: [
                 {time: 1582416000, summary: 'Light rain', icon: 'rain', temperatureMin: 6.37, temperatureMax: 13.47},
                 {time: 1582516000, summary: 'Overcast', icon: 'cloudy', temperatureMin: 4.23, temperatureMax: 12.42}

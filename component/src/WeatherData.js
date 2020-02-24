@@ -95,7 +95,7 @@ class WeatherData {
             // map the response hourly data, returning an empty array on error
             try {
                 forecast.hourly = response.data.hourly.data.map((h) => ({
-                    time: h.time,
+                    time: h.time || null,
                     summary: h.summary,
                     icon: h.icon,
                     temperature: h.temperature,

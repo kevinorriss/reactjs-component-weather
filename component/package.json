@@ -2,7 +2,7 @@
   "name": "@kevinorriss/weather",
   "version": "1.0.0",
   "description": "",
-  "main": "build/Weather.js",
+  "main": "build/WeatherComponent.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch"
