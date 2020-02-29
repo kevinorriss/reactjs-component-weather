@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-class WeatherData {
+class WeatherApi {
     constructor(darkskyToken, mapboxToken, units='uk2') {
         this.darkskyToken = darkskyToken
         this.mapboxToken = mapboxToken
@@ -125,4 +125,4 @@ class WeatherData {
     }
 }
 
-module.exports = WeatherData
+module.exports = WeatherApi

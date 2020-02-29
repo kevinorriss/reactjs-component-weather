@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import axios from 'axios'
+const axios = require('axios')
 
 class Location extends React.Component {
     constructor(props) {
@@ -17,8 +17,13 @@ class Location extends React.Component {
 
     componentDidMount() {
         // if browser doesn't support geolocation, fire event and return
-        if (!"geolocation" in navigator) {
+        if (typeof navigator.geolocation === "undefined") {
+            // set the error text
+            this.setState({ name: Location.ERROR_TEXT })
+
+            // call the location error callback
             this.props.onLocationError(Location.UNSUPPORTED_BROWSER)
+
             return
         }
 
@@ -38,25 +43,30 @@ class Location extends React.Component {
     }
 
     async onPositionSuccess(position) {
-        // destructure the position coordinates to lat/long
-        const { latitude, longitude } = position.coords
-
-        // fire callback function
-        this.props.onLocationReceived(latitude, longitude)
-
         try {
+            // destructure the position coordinates to lat/long
+            const { latitude, longitude } = position.coords
+
+            // fire callback function
+            this.props.onLocationReceived(latitude, longitude)
+
             // call the REST API to get the location name
             const url = `${this.props.locationURL}?latitude=${latitude}&longitude=${longitude}`
             const response = await axios.get(url)
 
             // set the name in the state
             this.setState({ name: response.data })
-        } catch (error) {
-            // fire error callback function
-            this.props.onLocationError(Location.RESPONSE_ERROR)
 
+            // call the name received callback
+            if (this.props.onNameReceived) {
+                this.props.onNameReceived(response.data)
+            }
+        } catch (error) {
             // set the location name
             this.setState({ name: Location.ERROR_TEXT})
+
+            // fire error callback function
+            this.props.onLocationError(Location.RESPONSE_ERROR)
         }
     }
 
@@ -77,7 +87,8 @@ Location.ERROR_TEXT = 'Location unavailable...'
 Location.propTypes = {
     onLocationReceived: PropTypes.func.isRequired,
     onLocationError: PropTypes.func.isRequired,
-    locationURL: PropTypes.string.isRequired,
+    onNameReceived: PropTypes.func,
+    locationURL: PropTypes.string.isRequired
 }
 
 export default Location

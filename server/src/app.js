@@ -1,8 +1,8 @@
 const express = require('express')
-const WeatherData = require('../../component/src/WeatherData')
+const WeatherApi = require('@kevinorriss/weather/build/WeatherApi')
 
 // create weather data instance
-const weather = new WeatherData(process.env.DARKSKY_TOKEN, process.env.MAPBOX_TOKEN)
+const weather = new WeatherApi(process.env.DARKSKY_TOKEN, process.env.MAPBOX_TOKEN)
 
 // create the express server
 const app = express()

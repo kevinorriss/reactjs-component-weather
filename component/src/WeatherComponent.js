@@ -40,7 +40,6 @@ class WeatherComponent extends React.Component {
     }
 
     onLocationError(code) {
-
         // pick the error message depending on code passed
         let errorMessage
         switch (code) {
@@ -102,6 +101,7 @@ class WeatherComponent extends React.Component {
                 )}
                 <Location
                     onLocationReceived={this.onLocationReceived}
+                    onNameReceived={this.onNameReceived}
                     onLocationError={this.onLocationError}
                     locationURL={this.props.locationURL}/>
                 <div>
@@ -154,7 +154,7 @@ class WeatherComponent extends React.Component {
                     forecastURL={this.props.forecastURL}
                     onSliderChange={this.onSliderChange}/>
                 </div>
-                <div class="weather__daily">
+                <div className="weather__daily">
                 {this.state.daily ? (
                     this.state.daily.map((day, index) => (
                         <div className="weather__day" title={day.summary} key={index}>
@@ -188,9 +188,4 @@ WeatherComponent.propTypes = {
     sliderMarks: PropTypes.number,
 }
 
-export {
-    WeatherComponent as default,
-    Location, 
-    HourSlider,
-    Icon
-}
+export default WeatherComponent

@@ -15,6 +15,14 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "jest": {
+    "setupFiles": [
+      "./test/jestSetup.js"
+    ],
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
+  },
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -30,5 +38,9 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "devDependencies": {
+    "enzyme-to-json": "^3.4.4",
+    "identity-obj-proxy": "^3.0.0"
+  }
 }

@@ -1,8 +1,6 @@
-/*
 import React from 'react'
-import { mount } from 'enzyme'
 import renderer from 'react-test-renderer'
-import { Icon } from '@kevinorriss/weather'
+import Icon from '@kevinorriss/weather/build/Icon'
 
 it('should render clear-day Icon correctly', () => {
     const component = renderer.create(<Icon name="clear-day" />).toJSON()
@@ -60,17 +58,3 @@ it('should render default Icon correctly', () => {
     const component = renderer.create(<Icon name="anyvaluethatdoesntexist" />).toJSON()
     expect(component).toMatchSnapshot()
 })
-
-
-clear-day
-clear-night
-rain
-snow
-sleet
-wind
-fog
-cloudy
-partly-cloudy-day
-partly-cloudy-night
-default
-*/
