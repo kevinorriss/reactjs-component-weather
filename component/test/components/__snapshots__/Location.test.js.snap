@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Should call error callback with no browser location support 1`] = `
+<div
+  className="weather__location"
+>
+  Location unavailable...
+</div>
+`;
+
+exports[`Should handle error from getCurrentPosition 1`] = `
+<div
+  className="weather__location"
+>
+  Location unavailable...
+</div>
+`;
+
+exports[`Should handle error in retrieving location name 1`] = `
+<div
+  className="weather__location"
+>
+  Location unavailable...
+</div>
+`;
+
+exports[`Should handle optional onNameReceived callback 1`] = `
+<div
+  className="weather__location"
+>
+  London, England
+</div>
+`;
+
+exports[`Should render loading text before location received 1`] = `
+<div
+  className="weather__location"
+>
+  Waiting for location
+</div>
+`;
+
+exports[`Should successfully retrieve location name 1`] = `
+<div
+  className="weather__location"
+>
+  London, England
+</div>
+`;

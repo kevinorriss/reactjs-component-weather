@@ -29,20 +29,21 @@ class HourSlider extends React.Component {
         }
     }
 
+    async requestForecast(url) {
+        return await axios.get(url)
+    }
+
     async getForecast(latitude, longitude) {
         let response
         try {
             // call the REST API to get the forecast data for the provided location
             const url = `${this.props.forecastURL}?latitude=${latitude}&longitude=${longitude}`
-            response = await axios.get(url)
+            response = await this.requestForecast(url)
         } catch (error) {
             // fire the error callback function and return
-            this.props.onForecastError()
+            this.props.onForecastError('Error getting forecast response')
             return
         }
-
-        // fire the forecast callback function
-        this.props.onForecastReceived(response.data)
 
         // destructure the forecast
         const { timezone, hourly } = response.data
@@ -51,8 +52,12 @@ class HourSlider extends React.Component {
 
         // check that we have enough hourly forecasts for each step
         if (hourly.length < maxMark) {
-            throw "Hourly forecast not covered"
+            this.props.onForecastError("Hourly forecast not covered")
+            return
         }
+
+        // fire the forecast callback function
+        this.props.onForecastReceived(response.data)
 
         let marks = {}
         let count = 0

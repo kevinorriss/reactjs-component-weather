@@ -70,6 +70,10 @@ class WeatherComponent extends React.Component {
         }))
     }
 
+    onNameReceived(name) {
+        console.log(`onNameReceived:${name}`)
+    }
+
     onForecastReceived(forecast) {
         this.setState((prevState) => ({
             ...prevState,
@@ -184,8 +188,7 @@ class WeatherComponent extends React.Component {
 
 WeatherComponent.propTypes = {
     locationURL: PropTypes.string.isRequired,
-    forecastURL: PropTypes.string.isRequired,
-    sliderMarks: PropTypes.number,
+    forecastURL: PropTypes.string.isRequired
 }
 
 export default WeatherComponent

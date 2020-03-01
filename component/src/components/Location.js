@@ -42,6 +42,10 @@ class Location extends React.Component {
         )
     }
 
+    async requestLocation(url) {
+        return await axios.get(url)
+    }
+
     async onPositionSuccess(position) {
         try {
             // destructure the position coordinates to lat/long
@@ -52,7 +56,7 @@ class Location extends React.Component {
 
             // call the REST API to get the location name
             const url = `${this.props.locationURL}?latitude=${latitude}&longitude=${longitude}`
-            const response = await axios.get(url)
+            const response = await this.requestLocation(url)
 
             // set the name in the state
             this.setState({ name: response.data })
