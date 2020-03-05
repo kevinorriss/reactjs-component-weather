@@ -5,6 +5,8 @@ import HourSlider from '../src/components/HourSlider'
 let positionOne
 let mockName
 let forecast
+let locationRequest
+let forecastRequest
 
 const onLocationReceived = jest.spyOn(WeatherComponent.prototype, 'onLocationReceived')
 const onLocationError = jest.spyOn(WeatherComponent.prototype, 'onLocationError')
@@ -62,10 +64,10 @@ beforeEach(() => {
         }
     }
 
-    const locationRequest = jest.spyOn(Location.prototype, 'requestLocation')
+    locationRequest = jest.spyOn(Location.prototype, 'requestLocation')
     locationRequest.mockImplementationOnce(() => Promise.resolve({ data: mockName}))
 
-    const forecastRequest = jest.spyOn(HourSlider.prototype, 'requestForecast')
+    forecastRequest = jest.spyOn(HourSlider.prototype, 'requestForecast')
     forecastRequest.mockImplementationOnce(() => Promise.resolve({ data: forecast}))
 })
 
@@ -134,6 +136,222 @@ it('Should handle location received in callback', (done) => {
         // component should render as expected
         expect(wrapper).toMatchSnapshot()
         
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle permission denied error', (done) => {
+    // mock the browser location request to error
+    navigator.geolocation = {
+        getCurrentPosition: (success, error) => {
+            error({ code: Location.PERMISSION_DENIED })
+        }
+    }
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(Location.PERMISSION_DENIED)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('Permission to read your location was denied')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle permission unavailable error', (done) => {
+    // mock the browser location request to error
+    navigator.geolocation = {
+        getCurrentPosition: (success, error) => {
+            error({ code: Location.POSITION_UNAVAILABLE })
+        }
+    }
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(Location.POSITION_UNAVAILABLE)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('Your position is unavailable')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle location timeout error', (done) => {
+    // mock the browser location request to error
+    navigator.geolocation = {
+        getCurrentPosition: (success, error) => {
+            error({ code: Location.TIMEOUT })
+        }
+    }
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(Location.TIMEOUT)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('Getting your position timed out')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle unsupported browser error', (done) => {
+    // mock the browser location request to error
+    navigator.geolocation = {
+        getCurrentPosition: (success, error) => {
+            error({ code: Location.UNSUPPORTED_BROWSER })
+        }
+    }
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(Location.UNSUPPORTED_BROWSER)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('Your browser does not support geolocation')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle location response error', (done) => {
+    // force the location external API call to fail
+    locationRequest.mockReset()
+    locationRequest.mockImplementationOnce(() => Promise.reject())
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(Location.RESPONSE_ERROR)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('An error occurred in the response to getting your location information')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle unknown error', (done) => {
+    // mock the browser location request to error with an unknown code
+    navigator.geolocation = {
+        getCurrentPosition: (success, error) => {
+            error({ code: -1 })
+        }
+    }
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // error callback should have been called
+        expect(onLocationError).toHaveBeenCalledTimes(1)
+        expect(onLocationError).toHaveBeenCalledWith(-1)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('An unknown error occured')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should handle forecast received in callback', (done) => {
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // the mocked location received callback should have been called
+        expect(onForecastReceived).toHaveBeenCalledTimes(1)
+        expect(onForecastReceived).toHaveBeenCalledWith(forecast)
+
+        expect(wrapper.state('timezone')).toEqual(forecast.timezone)
+        expect(wrapper.state('daily')).toEqual(forecast.daily)
+        expect(wrapper.state('hourly')).toEqual(forecast.hourly)
+        expect(wrapper.state('currentHour')).toEqual(forecast.hourly[0])
+
+        // component should render as expected
+        expect(wrapper).toMatchSnapshot()
+
         // tell jest the test is complete
         done()
     }, 20)

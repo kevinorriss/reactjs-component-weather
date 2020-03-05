@@ -70,10 +70,6 @@ class WeatherComponent extends React.Component {
         }))
     }
 
-    onNameReceived(name) {
-        console.log(`onNameReceived:${name}`)
-    }
-
     onForecastReceived(forecast) {
         this.setState((prevState) => ({
             ...prevState,
@@ -105,7 +101,6 @@ class WeatherComponent extends React.Component {
                 )}
                 <Location
                     onLocationReceived={this.onLocationReceived}
-                    onNameReceived={this.onNameReceived}
                     onLocationError={this.onLocationError}
                     locationURL={this.props.locationURL}/>
                 <div>

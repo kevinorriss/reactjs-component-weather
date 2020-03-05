@@ -1,4 +1,5 @@
 module.exports = {
+    exclude: "node_modules/**",
     presets: [
         [
             '@babel/preset-env',
@@ -13,5 +14,5 @@ module.exports = {
             }
         ]
     ],
-    plugins: [ 'inline-svg', 'css-modules-transform' ]
+    plugins: [ 'inline-import-data-uri', 'react-css-modules-transform' ]
 }
