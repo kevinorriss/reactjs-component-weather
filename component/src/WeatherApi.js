@@ -1,10 +1,10 @@
 const axios = require('axios')
 
 class WeatherApi {
-    constructor(darkskyToken, mapboxToken, units='uk2') {
+    constructor(darkskyToken, mapboxToken) {
         this.darkskyToken = darkskyToken
         this.mapboxToken = mapboxToken
-        this.units = units
+        this.units = 'uk2'
 
         this.location = this.location.bind(this)
         this.forecast = this.forecast.bind(this)
