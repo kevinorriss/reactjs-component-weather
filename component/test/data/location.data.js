@@ -1,17 +1,18 @@
 module.exports = {
     position: {
-        latitude: 51.505455,
-        longitude: -0.075356
-    },
-    response: {
-        data: {
-            features: [{
-                place_type: ['locality'],
-                text: 'Riverside'
-            }, {
-                place_type: ['place'],
-                text: 'London'
-            }]
+        coords: {
+            latitude: 51.505455,
+            longitude: -0.075356
         }
-    }
+    },
+    mapboxResponse: {
+        features: [{
+            place_type: ['locality'],
+            text: 'Tower Bridge'
+        }, {
+            place_type: ['place'],
+            text: 'London'
+        }]
+    },
+    expectedResponse: 'Tower Bridge, London'
 }

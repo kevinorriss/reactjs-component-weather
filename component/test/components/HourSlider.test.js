@@ -1,57 +1,21 @@
-import axios from 'axios'
 import HourSlider from '../../src/components/HourSlider'
 
-const getForecast = jest.spyOn(HourSlider.prototype, 'getForecast')
+// require the test data we pass to the mocked API calls
+const forecastData = require('../data/forecast.data')
 
-// setup variables before each test
-let positionOne
-let forecast
+// create the spies
+const requestForecast = jest.spyOn(HourSlider.prototype, 'requestForecast')
+
+// disable console errors for cleaner test output
+jest.spyOn(console, 'error').mockImplementation(() => {})
+
 beforeEach(() => {
-    // test location
-    positionOne = {
-        latitude: 51.505455,
-        longitude: -0.075356
-    }
-
-    forecast = {
-        timezone: 'Europe/London',
-        hourly: [
-            {time: 1582848000, summary: 'Rain', icon: 'rain', precipProbability: 0.85, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582851600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582855200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582858800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582862400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582866000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582869600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582873200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582876800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582880400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582884000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582887600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582891200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582894800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582898400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582902000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582905600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582909200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582912800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582916400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582920000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582923600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-        ],
-        daily: [
-            {time: 1582416000, summary: 'Light rain', icon: 'rain', temperatureMin: 6.37, temperatureMax: 13.47},
-            {time: 1582516000, summary: 'Overcast', icon: 'cloudy', temperatureMin: 4.23, temperatureMax: 12.42}
-        ]
-    }
-
-    // mock the external API response
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.resolve({ data: forecast}))
+    requestForecast.mockImplementationOnce(() => Promise.resolve({data: forecastData.expectedResponse }))
 })
 
 afterEach(() => {
-    getForecast.mockClear()
+    // reset the counts of every mock
+    jest.clearAllMocks()
 })
 
 it('Should render initial state', () => {
@@ -61,7 +25,7 @@ it('Should render initial state', () => {
     const onSliderChange = jest.fn()
 
     // shallow render the component
-    const wrapper = mount(
+    const wrapper = shallow(
         <HourSlider
             onForecastReceived={onForecastReceived}
             onForecastError={onForecastError}
@@ -72,14 +36,11 @@ it('Should render initial state', () => {
     // component should still be disabled
     expect(wrapper.state('disabled')).toEqual(true)
     expect(wrapper.state('marks')).toEqual({})
-
-    // should render as expected
-    expect(wrapper).toMatchSnapshot()
 })
 
 it('Should call error callback on external API request error', (done) => {
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.reject())
+    requestForecast.mockReset()
+    requestForecast.mockImplementationOnce(() => Promise.reject())
 
     // create the callback functions
     const onForecastReceived = jest.fn()
@@ -87,7 +48,7 @@ it('Should call error callback on external API request error', (done) => {
     const onSliderChange = jest.fn()
 
     // shallow render the component
-    const wrapper = mount(
+    const wrapper = shallow(
         <HourSlider
             onForecastReceived={onForecastReceived}
             onForecastError={onForecastError}
@@ -96,7 +57,7 @@ it('Should call error callback on external API request error', (done) => {
     )
 
     // set the lat/long props
-    wrapper.setProps({ latitude: positionOne.latitude, longitude: positionOne.longitude })
+    wrapper.setProps({ latitude: forecastData.position.latitude, longitude: forecastData.position.longitude })
 
     // set a short delay before testing callbacks
     setTimeout(() => {
@@ -112,9 +73,6 @@ it('Should call error callback on external API request error', (done) => {
         expect(wrapper.state('disabled')).toEqual(true)
         expect(wrapper.state('marks')).toEqual({})
 
-        // should render correctly
-        expect(wrapper).toMatchSnapshot()
-
         // tell jest the test is complete
         done()
     }, 20)
@@ -125,16 +83,17 @@ it('should handle when response contains less hourly data than expected', (done)
     const onForecastReceived = jest.fn()
     const onForecastError = jest.fn()
     const onSliderChange = jest.fn()
-
+    
     // set the hourly array to contain only the first two elements
-    forecast.hourly.splice(2)
+    const partialForecast = JSON.parse(JSON.stringify(forecastData.expectedResponse))
+    partialForecast.hourly.splice(2)
 
     // mock the external API call with the partial hourly forecast
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.resolve({ data: forecast}))
+    requestForecast.mockReset()
+    requestForecast.mockImplementationOnce(() => Promise.resolve({data: partialForecast }))
 
     // shallow render the component
-    const wrapper = mount(
+    const wrapper = shallow(
         <HourSlider
             onForecastReceived={onForecastReceived}
             onForecastError={onForecastError}
@@ -143,7 +102,7 @@ it('should handle when response contains less hourly data than expected', (done)
     )
 
     // set the lat/long props
-    wrapper.setProps({ latitude: positionOne.latitude, longitude: positionOne.longitude })
+    wrapper.setProps({ latitude: forecastData.position.latitude, longitude: forecastData.position.longitude })
 
     // set a short delay before testing callbacks
     setTimeout(() => {
@@ -159,9 +118,6 @@ it('should handle when response contains less hourly data than expected', (done)
         expect(wrapper.state('disabled')).toEqual(true)
         expect(wrapper.state('marks')).toEqual({})
 
-        // should render correctly
-        expect(wrapper).toMatchSnapshot()
-
         // tell jest the test is complete
         done()
     }, 20)
@@ -174,7 +130,7 @@ it('should handle valid forecast response', (done) => {
     const onSliderChange = jest.fn()
 
     // shallow render the component
-    const wrapper = mount(
+    const wrapper = shallow(
         <HourSlider
             onForecastReceived={onForecastReceived}
             onForecastError={onForecastError}
@@ -183,35 +139,32 @@ it('should handle valid forecast response', (done) => {
     )
 
     // set the lat/long props
-    wrapper.setProps({ latitude: positionOne.latitude, longitude: positionOne.longitude })
+    wrapper.setProps({ latitude: forecastData.position.latitude, longitude: forecastData.position.longitude })
 
     // set a short delay before testing callbacks
     setTimeout(() => {
         // success callback should have been called
         expect(onForecastReceived).toHaveBeenCalledTimes(1)
-        expect(onForecastReceived).toHaveBeenCalledWith(forecast)
+        expect(onForecastReceived).toHaveBeenCalledWith(forecastData.expectedResponse)
 
         // component should no longer be disabled
         expect(wrapper.state('disabled')).toEqual(false)
 
         // expect the marks to match the test data
         expect(wrapper.state('marks')).toEqual({
-            '0': '00:00',
+            '0': '14:00',
             '1': '',
-            '2': '04:00',
+            '2': '18:00',
             '3': '',
-            '4': '08:00',
+            '4': '22:00',
             '5': '',
-            '6': '12:00',
+            '6': '02:00',
             '7': '',
-            '8': '16:00',
+            '8': '06:00',
             '9': '',
-            '10': '20:00',
+            '10': '10:00',
             '11': ''
         })
-
-        // should render correctly
-        expect(wrapper).toMatchSnapshot()
         
         // tell jest the test is complete
         done()

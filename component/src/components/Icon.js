@@ -12,7 +12,7 @@ import snowIcon from '../icons/snow.png'
 import windIcon from '../icons/wind.png'
 import defaultIcon from '../icons/default.png'
 
-class HourSlider extends React.Component {
+class Icon extends React.Component {
     constructor(props) {
         super(props)
     }
@@ -61,8 +61,8 @@ class HourSlider extends React.Component {
     }
 }
 
-HourSlider.propTypes = {
+Icon.propTypes = {
     name: PropTypes.string.isRequired,
 }
 
-export default HourSlider
+export default Icon

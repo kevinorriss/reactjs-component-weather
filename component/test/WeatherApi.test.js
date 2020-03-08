@@ -4,8 +4,8 @@ import axios from 'axios'
 import WeatherApi from '../src/WeatherApi'
 
 // load in the forecast and location objects used as test data
-const forecastData = require('./data/forecast.data')
 const locationData = require('./data/location.data')
+const forecastData = require('./data/forecast.data')
 
 // define the test tokens
 const darkskyToken = 'myDarkskyToken'
@@ -17,6 +17,9 @@ const app = express()
 app.use(express.json())
 app.get('/weather/location', weather.location)
 app.get('/weather/forecast', weather.forecast)
+
+// disable console errors for cleaner test output
+jest.spyOn(console, 'error').mockImplementation(() => {})
 
 describe('constructor', () => {
     test('Should store constructor params', () => {
@@ -42,11 +45,11 @@ describe('forecast', () => {
     beforeEach(() => {
         // copy the forecast data object (clearing any alterations made by previous tests)
         requestPosition = JSON.parse(JSON.stringify(forecastData.position))
-        axiosResponse = JSON.parse(JSON.stringify(forecastData.response))
+        axiosResponse = JSON.parse(JSON.stringify(forecastData.darkskyResponse))
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
     })
 
     test('should error on missing latitude', async (done) => {
@@ -166,11 +169,11 @@ describe('forecast', () => {
 
     test('should handle no daily data response', async (done) => {
         // set test response data to have an empty array
-        axiosResponse.data.daily.data = []
+        axiosResponse.daily.data = []
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
         
         // send request, expecting a 200 response
         const response = await request(app)
@@ -180,8 +183,8 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
-            hourly: axiosResponse.data.hourly.data,
+            timezone: forecastData.expectedResponse.timezone,
+            hourly: forecastData.expectedResponse.hourly,
             daily: []
         })
 
@@ -191,11 +194,11 @@ describe('forecast', () => {
 
     test('should handle partial daily data response', async (done) => {
         // set the test reposnse data to have partial info
-        axiosResponse.data.daily.data = [{ time: 1582477200, summary: 'Overcast', icon: 'cloudy' }]
+        axiosResponse.daily.data = [{ time: 1582477200, summary: 'Overcast', icon: 'cloudy' }]
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -205,9 +208,9 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
-            hourly: axiosResponse.data.hourly.data,
-            daily: axiosResponse.data.daily.data
+            timezone: forecastData.expectedResponse.timezone,
+            hourly: forecastData.expectedResponse.hourly,
+            daily: axiosResponse.daily.data
         })
 
         // tell jest the test is complete
@@ -216,11 +219,11 @@ describe('forecast', () => {
 
     test('should handle no hourly data response', async (done) => {
         // set test response data to have an empty array
-        axiosResponse.data.hourly.data = []
+        axiosResponse.hourly.data = []
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -230,9 +233,9 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
+            timezone: forecastData.expectedResponse.timezone,
             hourly: [],
-            daily: axiosResponse.data.daily.data
+            daily: forecastData.expectedResponse.daily
         })
 
         // tell jest the test is complete
@@ -241,11 +244,11 @@ describe('forecast', () => {
 
     test('should handle partial hourly data response', async (done) => {
         // set the test reposnse data to have partial info
-        axiosResponse.data.hourly.data = [{ time: 1582416000, summary: 'Light rain', icon: 'rain' }]
+        axiosResponse.hourly.data = [{ time: 1582416000, summary: 'Light rain', icon: 'rain' }]
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -255,9 +258,9 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
-            hourly: axiosResponse.data.hourly.data,
-            daily: axiosResponse.data.daily.data
+            timezone: forecastData.expectedResponse.timezone,
+            hourly: axiosResponse.hourly.data,
+            daily: forecastData.expectedResponse.daily
         })
 
         // tell jest the test is complete
@@ -266,11 +269,11 @@ describe('forecast', () => {
 
     test('should return empty hourly array on map error', async (done) => {
         // delete the hourly array from the mock response, causing map to error
-        delete axiosResponse.data.hourly
+        delete axiosResponse.hourly
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -280,9 +283,9 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
+            timezone: forecastData.expectedResponse.timezone,
             hourly: [],
-            daily: axiosResponse.data.daily.data
+            daily: forecastData.expectedResponse.daily
         })
 
         // tell jest the test is complete
@@ -291,11 +294,11 @@ describe('forecast', () => {
 
     test('should return empty daily array on map error', async (done) => {
         // delete the daily array from the mock response, causing map to error
-        delete axiosResponse.data.daily
+        delete axiosResponse.daily
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -305,8 +308,8 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
-            hourly: axiosResponse.data.hourly.data,
+            timezone: forecastData.expectedResponse.timezone,
+            hourly: forecastData.expectedResponse.hourly,
             daily: []
         })
 
@@ -323,9 +326,9 @@ describe('forecast', () => {
 
         // response should match the mocked external response data
         expect(response.body).toMatchObject({
-            timezone: axiosResponse.data.timezone,
-            hourly: axiosResponse.data.hourly.data,
-            daily: axiosResponse.data.daily.data
+            timezone: forecastData.expectedResponse.timezone,
+            hourly: forecastData.expectedResponse.hourly,
+            daily: forecastData.expectedResponse.daily
         })
 
         // tell jest the test is complete
@@ -334,16 +337,15 @@ describe('forecast', () => {
 })
 
 describe('location', () => {
-
     let requestPosition, axiosResponse
     beforeEach(async () => {
         // copy the forecast data object (clearing any alterations made by previous tests)
-        requestPosition = JSON.parse(JSON.stringify(locationData.position))
-        axiosResponse = JSON.parse(JSON.stringify(locationData.response))
+        requestPosition = JSON.parse(JSON.stringify(locationData.position.coords))
+        axiosResponse = JSON.parse(JSON.stringify(locationData.mapboxResponse))
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
     })
 
     test('should error on missing latitude', async (done) => {
@@ -449,7 +451,7 @@ describe('location', () => {
             .expect(200)
 
         // Should return the locality and place
-        expect(response.text).toEqual('Riverside, London')
+        expect(response.text).toEqual('Tower Bridge, London')
 
         // tell jest the test is complete
         done()
@@ -457,12 +459,12 @@ describe('location', () => {
 
     test('should handle missing locality from mapbox response', async (done) => {
         // alter the reponse, removing locality
-        axiosResponse.data.features = axiosResponse.data.features.filter(
+        axiosResponse.features = axiosResponse.features.filter(
             (f) => f.place_type[0] !== 'locality')
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -479,12 +481,12 @@ describe('location', () => {
 
     test('should handle missing place from mapbox response', async (done) => {
         // alter the reponse, removing place
-        axiosResponse.data.features = axiosResponse.data.features.filter(
+        axiosResponse.features = axiosResponse.features.filter(
             (f) => f.place_type[0] !== 'place')
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)
@@ -493,7 +495,7 @@ describe('location', () => {
             .expect(200)
 
         // should return only the locality (without place)
-        expect(response.text).toEqual('Riverside')
+        expect(response.text).toEqual('Tower Bridge')
 
         // tell jest the test is complete
         done()
@@ -501,11 +503,11 @@ describe('location', () => {
 
     test('should handle missing locality and place from mapbox response', async (done) => {
         // alter the response, removing all location information
-        axiosResponse.data.features = []
+        axiosResponse.features = []
 
         // mock the external API call
         axios.get = jest.fn()
-        axios.get.mockImplementationOnce(() => Promise.resolve(axiosResponse))
+        axios.get.mockImplementationOnce(() => Promise.resolve({data: axiosResponse}))
 
         // send request, expecting a 200 response
         const response = await request(app)

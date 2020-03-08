@@ -28,7 +28,7 @@ exports[`Should handle optional onNameReceived callback 1`] = `
 <div
   className="weather__location"
 >
-  London, England
+  Tower Bridge, London
 </div>
 `;
 
@@ -44,6 +44,6 @@ exports[`Should successfully retrieve location name 1`] = `
 <div
   className="weather__location"
 >
-  London, England
+  Tower Bridge, London
 </div>
 `;

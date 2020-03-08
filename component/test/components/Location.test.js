@@ -1,31 +1,26 @@
-import axios from 'axios'
 import Location from '../../src/components/Location'
 
+// require the test data we pass to the mocked API calls
+const locationData = require('../data/location.data')
+
+// create the spies
+const requestLocation = jest.spyOn(Location.prototype, 'requestLocation')
+
+// disable console errors for cleaner test output
+jest.spyOn(console, 'error').mockImplementation(() => {})
+
 // setup variables before each test
-let positionOne
-let mockName
 beforeEach(() => {
-    // test location
-    positionOne = {
-        coords: {
-            latitude: 51.505455,
-            longitude: -0.075356
-        }
-    }
+    // mock getting the position from the browser, passing in the mock data
+    navigator.geolocation = { getCurrentPosition: jest.fn().mockImplementationOnce((success, error) => { success(locationData.position) }) }
 
-    // mock getting the position from the browser
-    navigator.geolocation = {
-        getCurrentPosition: (success, error) => {
-            success(positionOne)
-        }
-    }
+    // mock the response of the API call
+    requestLocation.mockImplementationOnce(() => Promise.resolve({data: locationData.expectedResponse }))
+})
 
-    // mock the external API response
-    mockName = "London, England"
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.resolve({
-        data: mockName
-    }))
+afterEach(() => {
+    // reset the counts of every mock
+    jest.clearAllMocks()
 })
 
 it('Should render loading text before location received', () => {
@@ -105,7 +100,7 @@ it('Should call onPositionSuccess from getCurrentPosition', () => {
 
     // callback function inside Location component should have been called with the test lat/long
     expect(onPositionSuccess).toHaveBeenCalledTimes(1)
-    expect(onPositionSuccess).toHaveBeenCalledWith(positionOne)
+    expect(onPositionSuccess).toHaveBeenCalledWith(locationData.position)
 
     // callbacks should not have been called
     expect(onLocationError).toHaveBeenCalledTimes(0)
@@ -151,13 +146,6 @@ it('Should successfully retrieve location name', (done) => {
     const onLocationReceived = jest.fn()
     const onLocationError = jest.fn()
     const onNameReceived = jest.fn()
-
-    // mock the external API response
-    const mockName = "London, England"
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.resolve({
-        data: mockName
-    }))
     
     // shallow render the component
     const wrapper = shallow(
@@ -169,7 +157,7 @@ it('Should successfully retrieve location name', (done) => {
     // set a short delay before testing callbacks
     setTimeout(() => {
         // get the lat/long expected
-        const { latitude, longitude } = positionOne.coords
+        const { latitude, longitude } = locationData.position.coords
 
         // location lat/long should be sent back
         expect(onLocationReceived).toHaveBeenCalledTimes(1)
@@ -177,13 +165,13 @@ it('Should successfully retrieve location name', (done) => {
 
         // name should be sent back
         expect(onNameReceived).toHaveBeenCalledTimes(1)
-        expect(onNameReceived).toHaveBeenCalledWith(mockName)
+        expect(onNameReceived).toHaveBeenCalledWith(locationData.expectedResponse)
 
         // no errors
         expect(onLocationError).toHaveBeenCalledTimes(0)
 
         // component re-renders with location name
-        expect(wrapper.text()).toEqual(mockName)
+        expect(wrapper.text()).toEqual(locationData.expectedResponse)
         expect(wrapper).toMatchSnapshot()
 
         // tell jest the test is complete
@@ -198,8 +186,8 @@ it('Should handle error in retrieving location name', (done) => {
     const onNameReceived = jest.fn()
 
     // mock the external API response, forcing an error
-    axios.get = jest.fn()
-    axios.get.mockImplementationOnce(() => Promise.reject())
+    requestLocation.mockReset()
+    requestLocation.mockImplementationOnce(() => Promise.reject())
 
     // shallow render the component
     const wrapper = shallow(
@@ -211,7 +199,7 @@ it('Should handle error in retrieving location name', (done) => {
     // set a short delay before testing callbacks
     setTimeout(() => {
         // get the lat/long expected
-        const { latitude, longitude } = positionOne.coords
+        const { latitude, longitude } = locationData.position.coords
 
         // location lat/long should be sent back
         expect(onLocationReceived).toHaveBeenCalledTimes(1)
@@ -247,7 +235,7 @@ it('Should handle optional onNameReceived callback', (done) => {
     // set a short delay before testing callbacks
     setTimeout(() => {
         // get the lat/long expected
-        const { latitude, longitude } = positionOne.coords
+        const { latitude, longitude } = locationData.position.coords
 
         // location lat/long should be sent back
         expect(onLocationReceived).toHaveBeenCalledTimes(1)
@@ -257,7 +245,7 @@ it('Should handle optional onNameReceived callback', (done) => {
         expect(onLocationError).toHaveBeenCalledTimes(0)
 
         // component re-renders with location name
-        expect(wrapper.text()).toEqual(mockName)
+        expect(wrapper.text()).toEqual(locationData.expectedResponse)
         expect(wrapper).toMatchSnapshot()
 
         // tell jest the test is complete

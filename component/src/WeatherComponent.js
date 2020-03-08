@@ -80,8 +80,12 @@ class WeatherComponent extends React.Component {
         }))
     }
 
-    onForecastError() {
-        console.log('forecast error')
+    onForecastError(message) {
+        // set the error in the state
+        this.setState((prevState) => ({
+            ...prevState,
+            error: message
+        }))
     }
 
     onSliderChange(index) {

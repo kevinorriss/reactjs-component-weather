@@ -2,86 +2,38 @@ import WeatherComponent from '../src/WeatherComponent'
 import Location from '../src/components/Location'
 import HourSlider from '../src/components/HourSlider'
 
-let positionOne
-let mockName
-let forecast
-let locationRequest
-let forecastRequest
+// require the test data we pass to the mocked API calls
+const locationData = require('./data/location.data')
+const forecastData = require('./data/forecast.data')
 
+// create the spies
+const locationDidMount = jest.spyOn(Location.prototype, 'componentDidMount')
+const requestLocation = jest.spyOn(Location.prototype, 'requestLocation')
+const requestForecast = jest.spyOn(HourSlider.prototype, 'requestForecast')
 const onLocationReceived = jest.spyOn(WeatherComponent.prototype, 'onLocationReceived')
 const onLocationError = jest.spyOn(WeatherComponent.prototype, 'onLocationError')
 const onForecastReceived = jest.spyOn(WeatherComponent.prototype, 'onForecastReceived')
 const onForecastError = jest.spyOn(WeatherComponent.prototype, 'onForecastError')
-const onSliderChange = jest.spyOn(WeatherComponent.prototype, 'onSliderChange')
+
+// disable console errors for cleaner test output
+jest.spyOn(console, 'error').mockImplementation(() => {})
 
 beforeEach(() => {
-    // test location
-    positionOne = {
-        coords: {
-            latitude: 51.505455,
-            longitude: -0.075356
-        }
-    }
+    // mock getting the position from the browser, passing in the mock data
+    navigator.geolocation = { getCurrentPosition: jest.fn().mockImplementationOnce((success, error) => { success(locationData.position) }) }
 
-    mockName = 'London, England'
-
-    forecast = {
-        timezone: 'Europe/London',
-        hourly: [
-            {time: 1582848000, summary: 'Rain', icon: 'rain', precipProbability: 0.85, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582851600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582855200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582858800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582862400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582866000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582869600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582873200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582876800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582880400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582884000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582887600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582891200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582894800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582898400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582902000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582905600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582909200, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582912800, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582916400, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582920000, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-            {time: 1582923600, summary: 'Rain', icon: 'rain', precipProbability: 0.82, temperature: 7.34, humidity: 0.82, windSpeed: 6.31},
-        ],
-        daily: [
-            {time: 1582416000, summary: 'Light rain', icon: 'rain', temperatureMin: 6.37, temperatureMax: 13.47},
-            {time: 1582516000, summary: 'Overcast', icon: 'cloudy', temperatureMin: 4.23, temperatureMax: 12.42}
-        ]
-    }
-
-    // mock getting the position from the browser
-    navigator.geolocation = {
-        getCurrentPosition: (success, error) => {
-            success(positionOne)
-        }
-    }
-
-    locationRequest = jest.spyOn(Location.prototype, 'requestLocation')
-    locationRequest.mockImplementationOnce(() => Promise.resolve({ data: mockName}))
-
-    forecastRequest = jest.spyOn(HourSlider.prototype, 'requestForecast')
-    forecastRequest.mockImplementationOnce(() => Promise.resolve({ data: forecast}))
+    requestLocation.mockImplementationOnce(() => Promise.resolve({data: locationData.expectedResponse }))
+    requestForecast.mockImplementationOnce(() => Promise.resolve({data: forecastData.expectedResponse }))
 })
 
 afterEach(() => {
-    onLocationReceived.mockClear()
-    onLocationError.mockClear()
-    onForecastReceived.mockClear()
-    onForecastError.mockClear()
-    onSliderChange.mockClear()
+    // reset the counts of every mock
+    jest.clearAllMocks()
 })
 
 it('Should render initial state correctly', (done) => {
-    // mock the location received callback to do nothing
-    onLocationReceived.mockImplementationOnce((latitude, longitude) => {})
+    // mock the location component mounting, preventing updates
+    locationDidMount.mockImplementationOnce(() => {})
 
     // mount the component
     const wrapper = mount(
@@ -92,8 +44,14 @@ it('Should render initial state correctly', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
-        // the mocked location received callback should have been called
-        expect(onLocationReceived).toHaveBeenCalledTimes(1)
+        // update the component
+        wrapper.update()
+
+        // the mocked location received callback should not have been called
+        expect(onLocationReceived).toHaveBeenCalledTimes(0)
+        expect(onLocationError).toHaveBeenCalledTimes(0)
+        expect(onForecastReceived).toHaveBeenCalledTimes(0)
+        expect(onForecastError).toHaveBeenCalledTimes(0)
 
         // the state should have remained the same
         expect(wrapper.state()).toEqual({
@@ -126,12 +84,15 @@ it('Should handle location received in callback', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // the mocked location received callback should have been called
         expect(onLocationReceived).toHaveBeenCalledTimes(1)
-        expect(onLocationReceived).toHaveBeenCalledWith(positionOne.coords.latitude, positionOne.coords.longitude)
+        expect(onLocationReceived).toHaveBeenCalledWith(locationData.position.coords.latitude, locationData.position.coords.longitude)
 
         // the state should have remained the same
-        expect(wrapper.state('position')).toEqual(positionOne.coords)
+        expect(wrapper.state('position')).toEqual(locationData.position.coords)
 
         // component should render as expected
         expect(wrapper).toMatchSnapshot()
@@ -158,6 +119,9 @@ it('Should handle permission denied error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(Location.PERMISSION_DENIED)
@@ -190,6 +154,9 @@ it('Should handle permission unavailable error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(Location.POSITION_UNAVAILABLE)
@@ -222,6 +189,9 @@ it('Should handle location timeout error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(Location.TIMEOUT)
@@ -254,6 +224,9 @@ it('Should handle unsupported browser error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(Location.UNSUPPORTED_BROWSER)
@@ -271,8 +244,8 @@ it('Should handle unsupported browser error', (done) => {
 
 it('Should handle location response error', (done) => {
     // force the location external API call to fail
-    locationRequest.mockReset()
-    locationRequest.mockImplementationOnce(() => Promise.reject())
+    requestLocation.mockReset()
+    requestLocation.mockImplementationOnce(() => Promise.reject())
 
     // mount the component
     const wrapper = mount(
@@ -283,9 +256,17 @@ it('Should handle location response error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(Location.RESPONSE_ERROR)
+
+        // should still get the forecast as the location coords were sent back even if the location name fails
+        expect(onLocationReceived).toHaveBeenCalledTimes(1)
+        expect(onLocationReceived).toHaveBeenCalledWith(locationData.position.coords.latitude, locationData.position.coords.longitude)
+        expect(requestForecast).toHaveBeenCalledTimes(1)
 
         // state should have been updated
         expect(wrapper.state('error')).toEqual('An error occurred in the response to getting your location information')
@@ -315,12 +296,49 @@ it('Should handle unknown error', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // error callback should have been called
         expect(onLocationError).toHaveBeenCalledTimes(1)
         expect(onLocationError).toHaveBeenCalledWith(-1)
 
         // state should have been updated
         expect(wrapper.state('error')).toEqual('An unknown error occured')
+
+        // should have rendered correctly
+        expect(wrapper).toMatchSnapshot()
+
+        // tell jest the test is complete
+        done()
+    }, 20)
+})
+
+it('Should hande forecast error', (done) => {
+    requestForecast.mockReset()
+    requestForecast.mockImplementationOnce(() => Promise.reject())
+
+    // mount the component
+    const wrapper = mount(
+        <WeatherComponent
+            locationURL="/weather/location"
+            forecastURL="/weather/forecast" />
+    )
+
+    // set a short delay before testing callbacks
+    setTimeout(() => {
+        // update the component
+        wrapper.update()
+
+        // error callback should have been called
+        expect(onForecastError).toHaveBeenCalledTimes(1)
+        expect(onForecastError).toHaveBeenCalledWith('Error getting forecast response')
+
+        // forecast shouldn't have been called
+        expect(onForecastReceived).toHaveBeenCalledTimes(0)
+
+        // state should have been updated
+        expect(wrapper.state('error')).toEqual('Error getting forecast response')
 
         // should have rendered correctly
         expect(wrapper).toMatchSnapshot()
@@ -340,14 +358,18 @@ it('Should handle forecast received in callback', (done) => {
 
     // set a short delay before testing callbacks
     setTimeout(() => {
+        // update the component
+        wrapper.update()
+
         // the mocked location received callback should have been called
         expect(onForecastReceived).toHaveBeenCalledTimes(1)
-        expect(onForecastReceived).toHaveBeenCalledWith(forecast)
+        expect(onForecastReceived).toHaveBeenCalledWith(forecastData.expectedResponse)
 
-        expect(wrapper.state('timezone')).toEqual(forecast.timezone)
-        expect(wrapper.state('daily')).toEqual(forecast.daily)
-        expect(wrapper.state('hourly')).toEqual(forecast.hourly)
-        expect(wrapper.state('currentHour')).toEqual(forecast.hourly[0])
+        // expect the forecast to have been set in the state
+        expect(wrapper.state('timezone')).toEqual(forecastData.expectedResponse.timezone)
+        expect(wrapper.state('daily')).toEqual(forecastData.expectedResponse.daily)
+        expect(wrapper.state('hourly')).toEqual(forecastData.expectedResponse.hourly)
+        expect(wrapper.state('currentHour')).toEqual(forecastData.expectedResponse.hourly[0])
 
         // component should render as expected
         expect(wrapper).toMatchSnapshot()
