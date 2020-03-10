@@ -1,4 +1,6 @@
 src/
-.babelrc
-.npmignore
+test/
+babel.config.js
 rollup.config.js
+yarn-error.log
+yarn.lock

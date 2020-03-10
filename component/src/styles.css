@@ -1,50 +1,115 @@
 .weather__container {
     font-family: 'Segoe UI', 'Helvetica Neue', monospace;
+    position: relative;
+    padding: 1rem;
 }
 
-.weather__location {
-    font-size: x-large;
+.weather__error {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    position: absolute;
+    top: 0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.weather__error p {
+    background-color: lightyellow;
+    margin: 0.5rem;
+    padding: 0.5rem;
+    text-align: center;
+    color: darkred;
+    background-color:lightpink;
+    border: 1px solid darkred;
     font-weight: bolder;
 }
 
-.weather__location span {
-    margin-left: 0.5rem;
+.weather__location {
+    font-size: large;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0.2rem;
 }
 
-.weather__current-row {
+.weather__current-summary {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    font-size:small;
+    color: gray;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0;
 }
 
-.weather__daylight-time {
-    display: inline;
-    margin: 0 0.5rem;
-    font-size: 0.8rem;
+.weather__current-forecast {
+    display: flex;
+    flex-direction: row;
 }
 
-.weather__daylight-time--sunrise {
-    font-weight: 900;
+.weather__icon {
+    width: 4rem;
 }
 
-.weather__daylight-time span {
-    margin-left: 0.2rem;
+.weather__current-temp {
+    flex-grow: 1;
+    font-size: xx-large;
+    margin: 0;
+    display: flex;
+    align-items: center;
 }
 
-.weather__next-24-hours {
+.weather__current-perc {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.weather__current-perc p {
+    margin: 0px;
+    font-size: small;
+    color: gray;
+}
+
+.weather__slider {
+    margin-bottom: 2rem;
+}
+
+.weather__daily {
     display: flex;
     flex-direction: row;
     overflow-x: scroll;
-    margin: 1rem 0;
-}
-
-.weather__hour {
-    display: flex;
-    flex-direction: column;
 }
 
 .weather__day {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+}
+
+.weather__temp {
+    margin: 0;
+    font-size: small;
+}
+
+.weather__temp--low {
+    color: grey;
+    margin-bottom: 0.2rem;
+}
+
+.weather__icon-link {
+    font-size: x-small;
+    text-align: center;
+    margin: 0;
+    margin-top: 0.5rem;
+}
+
+.weather__icon-link a {
+    color: lightgray;
 }

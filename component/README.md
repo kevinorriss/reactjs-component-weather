@@ -1,69 +1,87 @@
-# Boilerplate Component
+# Weather Component
 
-A boilerplate React component project for development and testing before publishing to NPM
+A weather forecast React component with an express API
 
 ## Prerequisites
 
-This component makes use of Bootstrap 4 class names, install bootstrap to your project or apply your own styles to the class names.
+For the API to work, you will need an account with the following API providers:
 
-* [Bootstrap v4.3](http://www.dropwizard.io/1.0.2/docs/) - Front-end component library
-* [React ^16.9.0](https://reactjs.org/) - Javascript library for user interfaces
+* [Mapbox](https://docs.mapbox.com/api/search/#geocoding) - Geocoding API
+* [Dark Sky](https://darksky.net/dev) - Weather Forecast API
+
+Create a free account to obtain your own API token
 
 ## Installing
 
 ```
-npm install @kevinorriss/boilerplate
+npm install @kevinorriss/weather
 ```
+
+Add your API tokens to the following environment variables (server side)
+
+* DARKSKY_TOKEN
+* MAPBOX_TOKEN
 
 ## Usage
 
-Import the component
+Import the component, passing in the relative URLs you'd like the component to call to access the API
 
 ```
-import Boilerplate from '@kevinorriss/boilerplate'
+import WeatherComponent from '@kevinorriss/weather'
 
 ...
 
 <!-- JSX -->
 <div className="your-container">
-    <Boilerplate />
+    <WeatherComponent locationURL="/weather/location" forecastURL="/weather/forecast" />
 </div>
+```
+
+Add the API to your express routes, passing in your darksky and mapbox tokens
+
+```
+import WeatherApi from '@kevinorriss/weather/build/WeatherApi'
+
+...
+
+// create weather data instance
+const weather = new WeatherApi(process.env.DARKSKY_TOKEN, process.env.MAPBOX_TOKEN)
+
+// define routes
+app.get('/weather/location', weather.location)
+app.get('/weather/forecast', weather.forecast)
 ```
 
 ## Development
 
 This repo comes with a react app for development purposes. To get started, open a terminal in the root of the project and then:
 
-### Link the component to the app
+### Link the component to the client / server
 ```
 cd ./component
 yarn link
 
-cd ..
-yarn link @kevinorriss/boilerplate
+cd ../client
+yarn link @kevinorriss/weather
+
+cd ../server
+yarn link @kevinorriss/weather
 ```
 
 ### Start the app
 ```
-yarn start
-```
-
-### Start the rollup watcher
-```
-cd ./component
-npm run dev
+yarn run dev
 ```
 
 Whenever you make a change to the component code, the react app will update.
 
 ## Tests
 ```
-yarn test
+cd ./component/
+yarn test:watch
 ```
 
 This project uses Jest and Enzyme for its unit tests, simply run the above code to run the test suites.
-
-If you want the tests to run during development, you will need to have rollup watching too!
 
 ## Author
 

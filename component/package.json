@@ -2,10 +2,21 @@
   "name": "@kevinorriss/weather",
   "version": "1.0.0",
   "description": "",
-  "main": "build/weather.min.js",
+  "main": "build/WeatherComponent.js",
   "scripts": {
-    "build": "rollup -c -o build/weather.min.js",
-    "dev": "rollup -c --watch -o build/weather.min.js"
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "setupFiles": [
+      "./test/jestSetup.js"
+    ],
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
   },
   "author": "Kevin Orriss <kevinorriss@gmail.com>",
   "license": "ISC",
@@ -13,17 +24,37 @@
     "@babel/core": "^7.6.0",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/plugin-transform-runtime": "7.5.5",
     "@babel/preset-env": "^7.6.0",
     "@babel/preset-react": "^7.0.0",
+    "@babel/runtime": "^7.8.4",
+    "babel-jest": "^25.1.0",
+    "babel-plugin-inline-import-data-uri": "^1.0.1",
+    "babel-plugin-react-css-modules-transform": "^1.5.5",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "enzyme-to-json": "^3.4.4",
+    "express": "^4.17.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^25.1.0",
+    "react-test-renderer": "^16.13.0",
     "rollup": "^1.21.2",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-uglify": "^6.0.3"
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-postcss": "^2.1.1",
+    "rollup-plugin-terser": "^5.2.0",
+    "supertest": "^4.0.2"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
     "@fortawesome/free-solid-svg-icons": "^5.11.2",
     "@fortawesome/react-fontawesome": "^0.1.7",
     "axios": "^0.19.0",
-    "rollup-plugin-postcss": "^2.0.3"
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.27",
+    "rc-slider": "^8.7.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-moment": "^0.9.6"
   }
 }

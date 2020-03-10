@@ -1,33 +1,16 @@
 {
-  "name": "boilerplate",
+  "name": "reactjs-weather-component",
   "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "enzyme": "^3.10.0",
-    "enzyme-adapter-react-16": "^1.14.0",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-scripts": "3.1.1"
-  },
+  "main": "src/server.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "server": "yarn --cwd server start",
+    "component": "yarn --cwd component run dev",
+    "client": "yarn --cwd client start",
+    "dev": "concurrently \"yarn run server\" \"yarn run component\" \"yarn run client\""
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "author": "Kevin Orriss <kevinorriss@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^5.0.0"
   }
 }
