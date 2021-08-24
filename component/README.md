@@ -59,18 +59,18 @@ This repo comes with a react app for development purposes. To get started, open 
 ### Link the component to the client / server
 ```
 cd ./component
-yarn link
+npm link
 
 cd ../client
-yarn link @kevinorriss/weather
+npm link @kevinorriss/weather
 
 cd ../server
-yarn link @kevinorriss/weather
+npm link @kevinorriss/weather
 ```
 
 ### Start the app
 ```
-yarn run dev
+npm run dev
 ```
 
 Whenever you make a change to the component code, the react app will update.
@@ -78,7 +78,7 @@ Whenever you make a change to the component code, the react app will update.
 ## Tests
 ```
 cd ./component/
-yarn test:watch
+npm test:watch
 ```
 
 This project uses Jest and Enzyme for its unit tests, simply run the above code to run the test suites.

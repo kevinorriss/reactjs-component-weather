@@ -1,6 +1,6 @@
 {
   "name": "reactjs-weather-component",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/server.js",
   "scripts": {
     "server": "yarn --cwd server start",
